@@ -13,10 +13,11 @@ namespace MyCore {
     public class ApplicationManager {
         private readonly static ApplicationManager CurrentContext = new ApplicationManager();
         public static ApplicationManager Current { get { return CurrentContext; } }
-        public IFactory Factory { get; set; }
-        public IConfigurationManager AppConfig { get; set; }
-        public ILogger Logger { get; set; }
-        public ICache Cache { get; set; }
+        public virtual IFactory Factory { get; set; }
+        public virtual IConfigurationManager AppConfig { get; set; }
+        public virtual ILogger Logger { get; set; }
+        public virtual ICache Cache { get; set; }
+        public virtual IMapper Mapper { get; set; }
         public virtual void Initialize() {
 
             #region Config
@@ -39,6 +40,14 @@ namespace MyCore {
 
             if (Cache == null) {
                 InitCache();
+            }
+
+            #endregion
+
+            #region Mapper
+
+            if (Mapper == null) {
+                InitMapper();
             }
 
             #endregion
@@ -72,6 +81,7 @@ namespace MyCore {
             builder.RegisterComposablePartCatalog(new AssemblyCatalog(Assembly.GetCallingAssembly()));
             builder.RegisterInstance(Logger);
             builder.RegisterInstance(Cache);
+            builder.RegisterInstance(Mapper);
             var factory = new DefaultFactory(builder);
 
             builder = new ContainerBuilder();
@@ -83,6 +93,9 @@ namespace MyCore {
             builder.Update(factory.Container);
 
             Factory = factory;
+        }
+        protected virtual void InitMapper() {
+            Mapper = new DefaultMapper();
         }
         protected virtual void InitMapping() {
             if (!Factory.IsRegistered<IMappingRegister>()) return;
